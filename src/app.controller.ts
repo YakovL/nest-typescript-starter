@@ -2,25 +2,30 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { PickType } from '@nestjs/mapped-types';
 
 // normally, DTO is in another file, this one is here to make the example brief
-class UpdateProjectNameParamsDto {
+class ProjectDto {
   @ApiProperty({
     description: 'Internal Id of project',
     example: '10fa8784-7006-499d-b97a-a406901df2b8',
   })
   @IsNotEmpty()
   @IsUUID()
-  projectId: string;
+  id: string;
 
-  @ApiProperty({
-    description: 'The name that project should be renamed into',
-    example: 'The Best Project',
-  })
   @IsNotEmpty()
   @IsString()
-  newName: string;
+  @ApiProperty({ description: 'Name of project', example: 'name' })
+  name: string;
+
+  // ...
 }
+
+export class UpdateProjectNameParamsDto extends PickType(ProjectDto, [
+  'id',
+  'name',
+] as const) {}
 
 @Controller()
 export class AppController {
@@ -32,8 +37,8 @@ export class AppController {
   }
 
   // was Patch in the real world example; using Get for simplicity
-  @Get('/:projectId/name/:newName')
+  @Get('/:id/name/:name')
   async rename(@Param() params: UpdateProjectNameParamsDto): Promise<string> {
-    return `got params.projectId equal to ${params.projectId}, params.newName equal to ${params.newName}`;
+    return `got params.id equal to ${params.id}, params.name equal to ${params.name}`;
   }
 }
